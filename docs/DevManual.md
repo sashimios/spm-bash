@@ -67,15 +67,15 @@ On the end user machine, installing a package involves several steps:
 - Update the `world` set.
 - Calculate dependency tree expansion.
 - For each new dependency:
-  - If the config file permits, detect available dpkg artifacts from configured mirrors. If found, skip the next step.
-  - Make the dpkg artifact.
+  - If the config file permits, detect available deb artifacts from configured mirrors. If found, skip the next step.
+  - Make the deb artifact with Diel.
     - Retrieve source files.
     - Verify hash.
     - Decompress.
     - Run build script.
-    - Produce dpkg artifact.
+    - Produce deb artifact.
     - Clean working directory.
-  - Install the dpkg artifact.
+  - Install the deb artifact.
 
 
 

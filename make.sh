@@ -2,11 +2,17 @@
 
 
 
-BIN_TARGETS="spm spm-maint"
+BIN_TARGETS="spm spm-maint diel"
 
 case $1 in
     build)
+        ### Make directories
         mkdir -p build/bin dist
+        ### Sync shared library
+        for binname in $BIN_TARGETS; do
+            rsync -av --delete "lib/" "src/$binname/001-lib/"
+        done
+        ### Combining files
         for binname in $BIN_TARGETS; do
             echo "[INFO] Building target '$binname'"
             binfn="build/bin/$binname"
