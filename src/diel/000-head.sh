@@ -3,7 +3,11 @@
 ###############################################################################
 # diel
 #
-# This script is a replacement for Ciel, responsible for assigning building
-# works to Autobuild3.
+# This script is responsible for producing deb artifacts.
 ###############################################################################
+
+
+
+
+
 

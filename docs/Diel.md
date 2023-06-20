@@ -15,10 +15,10 @@ Otherwise we will have to maintain separate build scripts.
 Diel takes the `spec` file path as input,
 and its output is the `deb` file.
 
-Example command:
+Example build command:
 
 ```
-diel make /var/db/spm-repo/sashimi/tree/sys-kernel/linux-src/spec
+diel build /var/db/spm-repo/sashimi/tree/sys-kernel/linux-src/spec
 ```
 
 Output file path:
@@ -26,3 +26,16 @@ Output file path:
 ```
 /var/cache/spm-deb/sys-kernel/linux-src--6.3.0.deb
 ```
+
+
+
+## Directories
+
+The general prefix is `/var/tmp/dielws/sys-kernel/linux-src`.
+
+| Subdirectory | Usage                                      |
+| ------------ | ------------------------------------------ |
+| `meta`       | Package definition files including patches |
+| `fetch`      | Downloaded files                           |
+| `work`       | Compilation working directory              |
+| `output`     | Files to be put into the deb artifact      |

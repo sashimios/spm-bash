@@ -17,14 +17,14 @@ case $1 in
             echo "[INFO] Building target '$binname'"
             binfn="build/bin/$binname"
             printf -- '' > "$binfn"
-            find "src/$binname" -type f | while read -r fn; do
+            find "src/$binname" -type f | sort | while read -r fn; do
                 cat "$fn" >> "$binfn"
             done
         done
         ;;
     install_local)
         find build/bin -type f | while read -r binfn; do
-            install --verbose -m755 "$binfn" "$HOME/.local/bin/$(basename "$binfn")"
+            sudo install --verbose -m755 "$binfn" "/usr/local/bin/$(basename "$binfn")"
         done
         ;;
     easy)
