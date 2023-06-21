@@ -5,6 +5,10 @@ function fetch_upstream_dist_file() {
         https://*)
             wget "$remote" -O "$save_to"
             ;;
+        tbl::https://*)
+            remote="$(sed 's|^tbl::||' <<< "$remote")"
+            wget "$remote" -O "$save_to"
+            ;;
         *)
             log_error "No support for remote spec '$remote'"
     esac

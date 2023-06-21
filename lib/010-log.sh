@@ -7,3 +7,5 @@ function log_error() {
 function log_warning() {
     echo "[WARNING] $*"
 }
+
+export -f log_info log_error log_warning

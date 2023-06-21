@@ -4,7 +4,7 @@ function SUBCMD_fix_spec_file() {
     (
         function find_hash_entry_line() {
             source "$spec_path"
-            local arr=("$CHKSUMS")
+            local arr=($CHKSUMS)
             echo "${arr[$index_counter]}"
         }
         TMPDIR=/tmp/spm-maint-workdir/fix--$(dirname "$spec_path")
@@ -42,5 +42,8 @@ case "$1" in
     fix)
         spec_path="$2"
         SUBCMD_fix_spec_file "$spec_path"
+        ;;
+    *)
+        echo "For more info:  https://github.com/sashimios/spm-bash"
         ;;
 esac

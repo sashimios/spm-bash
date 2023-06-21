@@ -9,12 +9,15 @@ function SUBCMD_build() {
     ### Create working directory
     export MASTER_DIR="/var/tmp/dielws/$pkg_id"
     sudo mkdir -p "$MASTER_DIR"/{meta,fetch,work,output}
-    sudo chmod 777 "$MASTER_DIR"/{meta,fetch,work,output}
+    sudo rm -rf "$MASTER_DIR"/{meta,work,output}
+    sudo mkdir -p "$MASTER_DIR"/{meta,fetch,work,output}
+    sudo chmod 755 "$MASTER_DIR"/{meta,fetch,work,output}
+    sudo chown nobody:root "$MASTER_DIR"/{meta,fetch,work,output}
     ### Download upstream dist files
     (
         function find_hash_entry_line() {
             source "$spec_path"
-            local arr=("$CHKSUMS")
+            local arr=($CHKSUMS)
             echo "${arr[$index_counter]}"
         }
         source "$spec_path"  # Security implications...
@@ -48,40 +51,12 @@ function SUBCMD_build() {
     # Apply patches...
 
     ### Start actual building
-    (
-        if [[ -e /etc/diel/make.conf ]]; then
-            source /etc/diel/make.conf
-        fi
-        cd "$MASTER_DIR"
-        export DESTDIR="$MASTER_DIR/output"
-        source "$spec_path"  # Security implications...
-        source "$(dirname "$spec_path")"/autobuild/defines
-        source "$(dirname "$spec_path")"/dbuild.sh
-        log_info "Ready to build package $pkg_id"
-        ### Load class-specific functions
-        [[ -z "$DIEL_CLASS" ]] && DIEL_CLASS=std
-        if [[ "$DIEL_CLASS" == "special" ]]; then
-            source "$(dirname "$spec_path")"/dbuild.sh
-        else
-            source "/usr/local/lib/minibuild/static/class/$DIEL_CLASS.sh"
-        fi
-        ### Use defined functions
-        cd "$MASTER_DIR/work"
-        start_building || die "Package-specific building script failed"
-        mkdir -p "$MASTER_DIR/output/DEBIAN"
-    )
+    buildlogfile="$MASTER_DIR/meta/build.log"
+    log_info "Saving build log to file: $buildlogfile"
+    (sudo -E -u nobody bash "$MINIBUILD_DIR/static/build.sh" | tee "$buildlogfile") || die "Build phase failed."
 
     ### Generate deb artifact
-    (
-        source "$spec_path"  # Security implications...
-        source "$(dirname "$spec_path")"/autobuild/defines
-        if [[ -z "$REL" ]]; then
-            REL=0
-        fi
-        log_info "Writing meta info into '$MASTER_DIR/output/DEBIAN/control'"
-        dpkgctrl
-        dpkgctrl > "$MASTER_DIR/output/DEBIAN/control"
-    )
+    sudo -E -u nobody bash "$MINIBUILD_DIR/static/gen-deb.sh"
     VER="$(grep Version "$MASTER_DIR/output/DEBIAN/control" | cut -d' ' -f2)"
     deb_name="$pkg_name--$VER.deb"
     deb_artifact_dir="/var/cache/spm-deb/$pkg_id"
@@ -97,6 +72,9 @@ case "$1" in
     build)
         spec_path="$2"
         SUBCMD_build "$spec_path"
+        ;;
+    *)
+        echo "For more info:  https://github.com/sashimios/spm-bash"
         ;;
 esac
 

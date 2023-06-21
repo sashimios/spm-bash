@@ -66,7 +66,8 @@ function dpkgctrl() {
 	else
 		echo "Essential: no"
 	fi
-	[ "$PKGDEP" ] && dpkgfield Depends $PKGDEP
+	# [ "$PKGDEP" ] && dpkgfield Depends $PKGDEP
+	[ "$PKGDEP" ] && dpkgfield Depends ""  # Temporarily disable dependency info
 	VER_NONE=1 # We don't autofill versions in optional fields
 	[ "$PKGRECOM" ] && dpkgfield Recommends $PKGRECOM
 	[ "$PKGREP" ] && dpkgfield Replaces $PKGREP
