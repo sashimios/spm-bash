@@ -37,14 +37,16 @@ function SUBCMD_build() {
                 log_error "Hash not matching!"
                 log_info "Real hash output:"
                 "${hash_type}sum" "$tmpfilepath"
-                log_info "Please either edit the spec file or investigate MITM attacks."
+                die "Please either edit the spec file or investigate MITM attacks."
             fi
             ### Next file...
             index_counter=$((index_counter+1))
         done
-    )
+    ) || die "Dist download phase failed."
+
     ### Preparation works
     # Apply patches...
+
     ### Start actual building
     (
         if [[ -e /etc/diel/make.conf ]]; then
@@ -56,16 +58,24 @@ function SUBCMD_build() {
         source "$(dirname "$spec_path")"/autobuild/defines
         source "$(dirname "$spec_path")"/dbuild.sh
         log_info "Ready to build package $pkg_id"
+        ### Load class-specific functions
+        [[ -z "$DIEL_CLASS" ]] && DIEL_CLASS=std
+        if [[ "$DIEL_CLASS" == "special" ]]; then
+            source "$(dirname "$spec_path")"/dbuild.sh
+        else
+            source "/usr/local/lib/minibuild/static/class/$DIEL_CLASS.sh"
+        fi
         ### Use defined functions
         cd "$MASTER_DIR/work"
-        start_building
+        start_building || die "Package-specific building script failed"
         mkdir -p "$MASTER_DIR/output/DEBIAN"
     )
+
     ### Generate deb artifact
     (
         source "$spec_path"  # Security implications...
         source "$(dirname "$spec_path")"/autobuild/defines
-        if [ -z "$REL" ]; then
+        if [[ -z "$REL" ]]; then
             REL=0
         fi
         log_info "Writing meta info into '$MASTER_DIR/output/DEBIAN/control'"
@@ -76,7 +86,7 @@ function SUBCMD_build() {
     deb_name="$pkg_name--$VER.deb"
     deb_artifact_dir="/var/cache/spm-deb/$pkg_id"
     sudo mkdir -p "$deb_artifact_dir"
-    dpkg-deb --build "$MASTER_DIR/output" "$deb_artifact_dir/$deb_name"
+    dpkg-deb --build "$MASTER_DIR/output" "$deb_artifact_dir/$deb_name" || die "Failed generating artifact."
 }
 
 
