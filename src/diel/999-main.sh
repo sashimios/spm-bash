@@ -6,13 +6,16 @@ function SUBCMD_build() {
     log_info "spec_path=$spec_path"
     log_info "pkg_cat=$pkg_cat"
     log_info "pkg_name=$pkg_name"
+
     ### Create working directory
     export MASTER_DIR="/var/tmp/dielws/$pkg_id"
-    sudo mkdir -p "$MASTER_DIR"/{meta,fetch,work,output}
-    sudo rm -rf "$MASTER_DIR"/{meta,work,output}
-    sudo mkdir -p "$MASTER_DIR"/{meta,fetch,work,output}
-    sudo chmod 755 "$MASTER_DIR"/{meta,fetch,work,output}
-    sudo chown nobody:root "$MASTER_DIR"/{meta,fetch,work,output}
+    mkdir -p "$MASTER_DIR"/{meta,fetch,work,output}
+    rm -rf "$MASTER_DIR"/{meta,work,output}
+    rsync -a --delete --mkpath "$(dirname "$spec_path")/" "$MASTER_DIR"/meta/
+    mkdir -p "$MASTER_DIR"/{meta,fetch,work,output}
+    chmod 755 "$MASTER_DIR"/{meta,fetch,work,output}
+    chown nobody:root "$MASTER_DIR"/{meta,fetch,work,output}
+
     ### Download upstream dist files
     (
         function find_hash_entry_line() {
@@ -29,18 +32,22 @@ function SUBCMD_build() {
             if [[ ! -e "$tmpfilepath" ]]; then
                 fetch_upstream_dist_file "$src_url" "$tmpfilepath"
             fi
+
             ### Check hash
             hash_entry_line="$(index_counter="$index_counter" spec_path="$spec_path" find_hash_entry_line | sed 's|::|@|')"
-            hash_type="$(cut -d@ -f1 <<< "$hash_entry_line")"
-            hash_value="$(cut -d@ -f2 <<< "$hash_entry_line")"
-            log_info "Expecting hash $hash_type : $hash_value"
-            if "${hash_type}sum" "$tmpfilepath" | grep -oqs "$hash_value"; then
-                log_info "NICE! Hash matched!"
-            else
-                log_error "Hash not matching!"
-                log_info "Real hash output:"
-                "${hash_type}sum" "$tmpfilepath"
-                die "Please either edit the spec file or investigate MITM attacks."
+
+            if [[ "$hash_entry_line" != SKIP ]]; then
+                hash_type="$(cut -d@ -f1 <<< "$hash_entry_line")"
+                hash_value="$(cut -d@ -f2 <<< "$hash_entry_line")"
+                log_info "Expecting hash $hash_type : $hash_value"
+                if "${hash_type}sum" "$tmpfilepath" | grep -oqs "$hash_value"; then
+                    log_info "NICE! Hash matched!"
+                else
+                    log_error "Hash not matching!"
+                    log_info "Real hash output:"
+                    "${hash_type}sum" "$tmpfilepath"
+                    die "Please either edit the spec file or investigate MITM attacks."
+                fi
             fi
             ### Next file...
             index_counter=$((index_counter+1))
