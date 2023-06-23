@@ -16,11 +16,11 @@ function SUBCMD_build() {
     rsync -a --delete --mkpath "$(dirname "$spec_path")/" "$MASTER_DIR"/meta/
     mkdir -p "$MASTER_DIR"/{meta,work,output}
     chmod 755 "$MASTER_DIR"/{meta,work,output}
-    chown $safe_user:root "$MASTER_DIR"/{meta,work,output}
-    chown $safe_user:root "$FETCH_DIR"
+    chown "$safe_user":root "$MASTER_DIR"/{meta,work,output}
+    chown "$safe_user":root "$FETCH_DIR"
 
     ### Download upstream dist files
-    sudo -E -u $safe_user spec_path="$spec_path" diel-fetch  || die "Dist download phase failed."
+    sudo -E -u "$safe_user" spec_path="$spec_path" diel-fetch  || die "Dist download phase failed."
 
     ### Preparation works
     preminibuild_src_unpack
@@ -31,15 +31,19 @@ function SUBCMD_build() {
     log_info "Saving build log to file: $buildlogfile"
     log_info "Assigning building job to Minibuild..."
     echo "==========================================================================="
-    set -e
-    trap 'die "Build phase failed."; exit 1' ERR
-    sudo -E -u $safe_user bash "$MINIBUILD_DIR/static/build.sh" | tee "$buildlogfile"
+    # set -e
+    # trap 'die "Build phase failed."; exit 1' ERR
+    if ! sudo -E -u "$safe_user" bash "$MINIBUILD_DIR/static/build.sh" > "$buildlogfile"; then
+        cat "$buildlogfile"
+        die "Build phase failed."
+    fi
+    cat "$buildlogfile"
     echo "==========================================================================="
     log_info "Saved build log to file: $buildlogfile"
 
 
     ### Generate deb artifact
-    sudo -E -u $safe_user bash "$MINIBUILD_DIR/static/gen-deb.sh"
+    sudo -E -u "$safe_user" bash "$MINIBUILD_DIR/static/gen-deb.sh"
     VER="$(grep Version "$MASTER_DIR/output/DEBIAN/control" | cut -d' ' -f2)"
     deb_name="$pkg_name--$VER.deb"
     deb_artifact_dir="/var/cache/spm-deb/$pkg_id"

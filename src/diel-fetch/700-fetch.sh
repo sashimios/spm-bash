@@ -22,7 +22,7 @@ function fetch_upstream_dist_file() {
         https://*)
             alt_wget "$remote" "$save_to"
             ;;
-        tbl::https://*)
+        tbl::https://* | tbl::http://*)
             remote="$(sed 's|^tbl::||' <<< "$remote")"
             alt_wget "$remote" "$save_to"
             ;;
