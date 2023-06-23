@@ -1,5 +1,5 @@
 function die() {
-    echo "[FATAL] $*"
+    log_error "[FATAL] $*"
     exit 1
 }
 

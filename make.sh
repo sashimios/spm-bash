@@ -2,7 +2,7 @@
 
 
 
-BIN_TARGETS="spm spm-maint diel"
+BIN_TARGETS="spm spm-maint diel diel-fetch"
 
 case $1 in
     build)

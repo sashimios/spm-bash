@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ###############################################################################
-# diel
+# diel-fetch
 #
-# This script is responsible for producing deb artifacts.
+# This script is responsible for collecting files for the `diel` script.
 ###############################################################################
 
 
@@ -16,11 +16,6 @@ CONF=/etc/diel/make.conf
 ### Constant variables
 export MINIBUILD_DIR="/usr/local/lib/minibuild"  # Prefer manual installation
 [[ ! -d "$MINIBUILD_DIR" ]] && export MINIBUILD_DIR="/usr/lib/minibuild"  # Fallback to distro-provided installation
-
-### Default config
-[[ -z "$safe_user" ]] && export safe_user=nobody
-
-
 
 
 ### Runtime dynamic config

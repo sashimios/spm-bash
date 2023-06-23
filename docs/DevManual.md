@@ -50,6 +50,14 @@ Please see the existing practice in [sashimios/tree-sashimi](https://github.com/
 
 The tree structure should be similar to [AOSC-Dev/aosc-os-abbs](https://github.dev/AOSC-Dev/aosc-os-abbs).
 
+### Upstream Dist Files
+
+For example, FETCH_DIR for package `core-shells/bash` is:
+
+```
+/var/cache/diel-fetch/core-shells/bash
+```
+
 ### Binary Artifacts
 
 All binary artifacts are placed under `/var/cache/spm-deb`.

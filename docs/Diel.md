@@ -36,6 +36,52 @@ The general prefix is `/var/tmp/dielws/sys-kernel/linux-src`.
 | Subdirectory | Usage                                      |
 | ------------ | ------------------------------------------ |
 | `meta`       | Package definition files including patches |
-| `fetch`      | Downloaded files                           |
 | `work`       | Compilation working directory              |
 | `output`     | Files to be put into the deb artifact      |
+
+
+
+
+## Configuration
+
+### Prefix Path
+
+All config files are relative to this path:
+
+```
+/etc/diel
+```
+
+
+
+
+
+
+### File: make.conf
+
+Heavily inspired by `/etc/portage/make.conf`.
+For more info, see [Gentoo wiki](https://wiki.gentoo.org/wiki//etc/portage/make.conf).
+
+
+#### MAKEOPTS
+
+Example:
+
+```
+-j8
+```
+
+
+#### DIST_MIRRORS
+
+Where to find dist files.
+
+The server may be a simple Nginx config:
+
+```
+server {
+    listen 28182;
+    root /var/cache/diel-fetch;
+    autoindex on;
+}
+```
