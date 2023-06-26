@@ -20,7 +20,7 @@ function SUBCMD_build() {
     chown "$safe_user":root "$FETCH_DIR"
 
     ### Download upstream dist files
-    sudo -E -u "$safe_user" spec_path="$spec_path" diel-fetch  || die "Dist download phase failed."
+    sudo -E -u "$safe_user" diel fetch "$spec_path" || die "Dist download phase failed."
 
     ### Preparation works
     preminibuild_src_unpack
@@ -28,18 +28,16 @@ function SUBCMD_build() {
     ### Start actual building
     buildlogfile="/var/log/diel-minibuild/$pkg_id.log"
     mkdir -p "$(dirname "$buildlogfile")"
-    log_info "Saving build log to file: $buildlogfile"
     log_info "Assigning building job to Minibuild..."
+    log_info "Saving build log to file: $buildlogfile"
     echo "==========================================================================="
-    # set -e
-    # trap 'die "Build phase failed."; exit 1' ERR
-    if ! sudo -E -u "$safe_user" bash "$MINIBUILD_DIR/static/build.sh" > "$buildlogfile"; then
-        cat "$buildlogfile"
-        die "Build phase failed."
-    fi
-    cat "$buildlogfile"
+    sudo -E -u "$safe_user" bash "$MINIBUILD_DIR/static/build.sh" 2>&1 | tee "$buildlogfile"
     echo "==========================================================================="
     log_info "Saved build log to file: $buildlogfile"
+    log_info "Run 'diel plainlog $buildlogfile' to get uncolored log for sharing."
+    if [[ "${PIPESTATUS[0]}" != 0 ]]; then
+        die "Build phase failed."
+    fi
 
 
     ### Generate deb artifact
@@ -61,9 +59,19 @@ function SUBCMD_build() {
 
 
 case "$1" in
+    fetch)
+        spec_path="$2"
+        log_info "diel $*"
+        SUBCMD_fetch "$spec_path"
+        ;;
     build)
         spec_path="$2"
+        log_info "diel $*"
         SUBCMD_build "$spec_path"
+        ;;
+    plainlog)
+        logfile="$2"
+        sed -E 's/\x1B\[[0-9;]*[a-zA-Z]//g' "$logfile"
         ;;
     *)
         echo "For more info:  https://github.com/sashimios/spm-bash"
