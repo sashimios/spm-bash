@@ -32,10 +32,11 @@ function SUBCMD_build() {
     log_info "Saving build log to file: $buildlogfile"
     echo "==========================================================================="
     sudo -E -u "$safe_user" bash "$MINIBUILD_DIR/static/build.sh" 2>&1 | tee "$buildlogfile"
+    isBadBuild="${PIPESTATUS[0]}"
     echo "==========================================================================="
     log_info "Saved build log to file: $buildlogfile"
     log_info "Run 'diel plainlog $buildlogfile' to get uncolored log for sharing."
-    if [[ "${PIPESTATUS[0]}" != 0 ]]; then
+    if [[ $isBadBuild != 0 ]]; then
         die "Build phase failed."
     fi
 
